@@ -19,15 +19,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 시스템 메시지와 대화 히스토리 결합
-    const systemMessage = {
-      role: "system",
-      content:
-        '당신은 도움이 되고 친근한 AI 어시스턴트입니다. 사용자가 최신 정보나 실시간 데이터가 필요한 질문을 하면 web_search 함수를 사용해서 웹 검색을 수행하세요. 사용자가 "그려줘", "그려", "그림", "이미지" 등의 키워드로 이미지 생성을 요청하면 image_generation 도구를 사용해서 이미지를 생성하세요. 검색 결과나 이미지 생성 시 출처와 시간을 명시해주세요.'
-    }
-    const allMessages = [systemMessage, ...messages]
+    // 사용자 입력 준비
+    const userInput = messages[messages.length - 1]?.content || ""
 
-    // OpenAI Responses API 호출 (GPT-4o 고정, 대화 히스토리 포함, 도구 지원)
+    // Python 구조와 동일한 responses.create() 방식 (fetch 사용)
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: {
@@ -36,18 +31,8 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         model: "gpt-4o",
-        input: allMessages[allMessages.length - 1].content, // 최신 사용자 입력
-        messages: allMessages.slice(0, -1), // 이전 대화 히스토리
-        max_tokens: 2000,
-        temperature: 0.7,
-        tools: [
-          {
-            type: "web_search"
-          },
-          {
-            type: "image_generation"
-          }
-        ]
+        tools: [{ type: "web_search_preview" }, { type: "image_generation" }],
+        input: userInput
       })
     })
 
@@ -61,36 +46,33 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json()
 
-    // Responses API 응답 구조 처리
+    // Python 구조와 동일한 응답 처리 (response.output_text)
     let aiResponse = "응답을 생성할 수 없습니다."
     let hasImageGeneration = false
     let imageUrl = null
 
-    if (data.output && data.output.length > 0) {
-      // 텍스트 응답 찾기
-      const textOutput = data.output.find(
-        (output: any) => output.type === "text"
-      )
-      if (textOutput) {
-        aiResponse = textOutput.content || textOutput.text
-      }
+    // Python에서 response.output_text를 사용하는 것처럼
+    if (data.output_text) {
+      aiResponse = data.output_text
+    }
 
-      // 이미지 생성 결과 찾기
-      const imageOutput = data.output.find(
-        (output: any) => output.type === "image_generation_call"
-      )
-      if (imageOutput && imageOutput.result) {
-        hasImageGeneration = true
-        // Base64 데이터를 이미지 URL로 변환
-        imageUrl = `data:image/png;base64,${imageOutput.result}`
+    // 도구 호출 결과 처리 (이미지 생성 등)
+    if (data.tool_calls && data.tool_calls.length > 0) {
+      for (const toolCall of data.tool_calls) {
+        if (toolCall.type === "image_generation" && toolCall.result) {
+          hasImageGeneration = true
+          // Base64 데이터를 이미지 URL로 변환
+          imageUrl = `data:image/png;base64,${toolCall.result}`
 
-        // 이미지 응답에 마크다운 형태로 추가
-        aiResponse += `\n\n![생성된 이미지](${imageUrl})\n\n🎨 이미지 생성 완료: ${new Date().toLocaleString("ko-KR")}`
+          // 이미지 응답에 마크다운 형태로 추가
+          aiResponse += `\n\n![생성된 이미지](${imageUrl})\n\n🎨 이미지 생성 완료: ${new Date().toLocaleString("ko-KR")}`
+        }
+
+        // web_search_preview 결과는 이미 output_text에 포함됨
+        if (toolCall.type === "web_search_preview" && toolCall.result) {
+          console.log("Web search result:", toolCall.result)
+        }
       }
-    } else if (data.choices && data.choices[0]) {
-      // 기존 Chat Completions 형태 fallback
-      aiResponse =
-        data.choices[0]?.message?.content || "응답을 생성할 수 없습니다."
     }
 
     return NextResponse.json({
