@@ -1,44 +1,44 @@
 // 더미 파일들
-export const getAssistantWorkspacesByWorkspaceId = async () => []
-export const getChatsByWorkspaceId = async () => []
-export const getCollectionWorkspacesByWorkspaceId = async () => []
-export const getFileWorkspacesByWorkspaceId = async () => []
-export const getFoldersByWorkspaceId = async () => []
-export const getModelWorkspacesByWorkspaceId = async () => []
-export const getPresetWorkspacesByWorkspaceId = async () => []
-export const getPromptWorkspacesByWorkspaceId = async () => []
-export const getToolWorkspacesByWorkspaceId = async () => []
-export const getAssistantImageFromStorage = async () => null
-export const getAssistantCollectionsByAssistantId = async () => []
-export const getAssistantFilesByAssistantId = async () => []
-export const getAssistantToolsByAssistantId = async () => []
-export const updateChat = async () => null
-export const getCollectionFilesByCollectionId = async () => []
-export const deleteMessagesIncludingAndAfter = async () => null
-export const getChatFilesByChatId = async () => []
-export const getChatById = async () => null
-export const getMessageFileItemsByMessageId = async () => []
-export const getMessagesByChatId = async () => []
-export const getMessageImageFromStorage = async () => null
-export const createChatFiles = async () => null
-export const createChat = async () => null
-export const createMessageFileItems = async () => null
-export const createMessages = async () => null
-export const updateMessage = async () => null
-export const uploadMessageImage = async () => null
-export const getFileFromStorage = async () => null
-export const createAssistants = async () => null
-export const createChats = async () => null
-export const createCollections = async () => null
-export const createFiles = async () => null
-export const createPresets = async () => null
-export const createPrompts = async () => null
-export const createTools = async () => null
-export const createDocXFile = async () => null
-export const createFile = async () => null
-export const getProfileImageUrl = async () => null
-export const uploadProfileImage = async () => null
-export const getWorkspaceImageFromStorage = async () => null
-export const getLimitsByUserId = async () => null
-export const incrementProfileUsage = async () => null
-export const resetProfileUsage = async () => null
+export const getAssistantWorkspacesByWorkspaceId = async (workspaceId?: string) => []
+export const getChatsByWorkspaceId = async (workspaceId?: string) => []
+export const getCollectionWorkspacesByWorkspaceId = async (workspaceId?: string) => []
+export const getFileWorkspacesByWorkspaceId = async (workspaceId?: string) => []
+export const getFoldersByWorkspaceId = async (workspaceId?: string) => []
+export const getModelWorkspacesByWorkspaceId = async (workspaceId?: string) => []
+export const getPresetWorkspacesByWorkspaceId = async (workspaceId?: string) => []
+export const getPromptWorkspacesByWorkspaceId = async (workspaceId?: string) => []
+export const getToolWorkspacesByWorkspaceId = async (workspaceId?: string) => []
+export const getAssistantImageFromStorage = async (imagePath?: string) => null
+export const getAssistantCollectionsByAssistantId = async (assistantId?: string) => []
+export const getAssistantFilesByAssistantId = async (assistantId?: string) => []
+export const getAssistantToolsByAssistantId = async (assistantId?: string) => []
+export const updateChat = async (chatId?: string, data?: any) => null
+export const getCollectionFilesByCollectionId = async (collectionId?: string) => []
+export const deleteMessagesIncludingAndAfter = async (messageId?: string) => null
+export const getChatFilesByChatId = async (chatId?: string) => []
+export const getChatById = async (chatId?: string) => null
+export const getMessageFileItemsByMessageId = async (messageId?: string) => []
+export const getMessagesByChatId = async (chatId?: string) => []
+export const getMessageImageFromStorage = async (imagePath?: string) => null
+export const createChatFiles = async (data?: any) => null
+export const createChat = async (data?: any) => null
+export const createMessageFileItems = async (data?: any) => null
+export const createMessages = async (data?: any) => null
+export const updateMessage = async (messageId?: string, data?: any) => null
+export const uploadMessageImage = async (image?: any) => null
+export const getFileFromStorage = async (filePath?: string) => null
+export const createAssistants = async (data?: any) => null
+export const createChats = async (data?: any) => null
+export const createCollections = async (data?: any) => null
+export const createFiles = async (data?: any) => null
+export const createPresets = async (data?: any) => null
+export const createPrompts = async (data?: any) => null
+export const createTools = async (data?: any) => null
+export const createDocXFile = async (data?: any) => null
+export const createFile = async (data?: any) => null
+export const getProfileImageUrl = async (userId?: string) => null
+export const uploadProfileImage = async (image?: any) => null
+export const getWorkspaceImageFromStorage = async (imagePath?: string) => null
+export const getLimitsByUserId = async (userId?: string) => null
+export const incrementProfileUsage = async (userId?: string, usage?: number) => null
+export const resetProfileUsage = async (userId?: string) => null

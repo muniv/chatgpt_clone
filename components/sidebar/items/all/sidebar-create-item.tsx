@@ -95,10 +95,12 @@ export const SidebarCreateItem: FC<SidebarCreateItemProps> = ({
 
       const createdCollection = await createCollection(rest, workspaceId)
 
-      const finalCollectionFiles = collectionFiles.map(collectionFile => ({
-        ...collectionFile,
-        collection_id: createdCollection.id
-      }))
+      const finalCollectionFiles = collectionFiles.map(
+        (collectionFile: any) => ({
+          ...collectionFile,
+          collection_id: createdCollection.id
+        })
+      )
 
       await createCollectionFiles(finalCollectionFiles)
 
@@ -115,7 +117,7 @@ export const SidebarCreateItem: FC<SidebarCreateItemProps> = ({
     ) => {
       const { image, files, collections, tools, ...rest } = createState
 
-      const createdAssistant = await createAssistant(rest, workspaceId)
+      const createdAssistant = await createAssistant(rest)
 
       let updatedAssistant = createdAssistant
 
@@ -145,27 +147,29 @@ export const SidebarCreateItem: FC<SidebarCreateItemProps> = ({
         }
       }
 
-      const assistantFiles = files.map(file => ({
+      const finalAssistantFiles = files.map((file: Tables<"files">) => ({
         user_id: rest.user_id,
         assistant_id: createdAssistant.id,
         file_id: file.id
       }))
 
-      const assistantCollections = collections.map(collection => ({
-        user_id: rest.user_id,
-        assistant_id: createdAssistant.id,
-        collection_id: collection.id
-      }))
+      const finalAssistantCollections = collections.map(
+        (collection: Tables<"collections">) => ({
+          user_id: rest.user_id,
+          assistant_id: createdAssistant.id,
+          collection_id: collection.id
+        })
+      )
 
-      const assistantTools = tools.map(tool => ({
+      const finalAssistantTools = tools.map((tool: Tables<"tools">) => ({
         user_id: rest.user_id,
         assistant_id: createdAssistant.id,
         tool_id: tool.id
       }))
 
-      await createAssistantFiles(assistantFiles)
-      await createAssistantCollections(assistantCollections)
-      await createAssistantTools(assistantTools)
+      await createAssistantFiles(finalAssistantFiles)
+      await createAssistantCollections(finalAssistantCollections)
+      await createAssistantTools(finalAssistantTools)
 
       return updatedAssistant
     },

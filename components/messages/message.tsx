@@ -336,7 +336,7 @@ export const Message: FC<MessageProps> = ({
                 </div>
 
                 <div className="mt-3 space-y-4">
-                  {Object.values(fileSummary).map((file, index) => (
+                  {Object.values(fileSummary).map((file: any, index) => (
                     <div key={index}>
                       <div className="flex items-center space-x-2">
                         <div>
@@ -377,7 +377,7 @@ export const Message: FC<MessageProps> = ({
         )}
 
         <div className="mt-3 flex flex-wrap gap-2">
-          {message.image_paths.map((path, index) => {
+          {message.image_paths.map((path: string, index: number) => {
             const item = chatImages.find(image => image.path === path)
 
             return (

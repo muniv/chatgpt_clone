@@ -371,6 +371,8 @@ export const handleCreateChat = async (
     embeddings_provider: chatSettings.embeddingsProvider
   })
 
+  if (!createdChat) return
+
   setSelectedChat(createdChat)
   setChats(chats => [createdChat, ...chats])
 
