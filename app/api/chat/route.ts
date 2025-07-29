@@ -27,6 +27,13 @@ export async function POST(request: NextRequest) {
     }
     const allMessages = [systemMessage, ...messages]
 
+    // 응답 처리를 위한 변수들
+    let hasWebSearch = false
+    let hasImageGeneration = false
+    let searchResults = ""
+    let imageUrl = ""
+    let aiResponse = ""
+
     // Chat Completions API 사용 (Function Calling 지원)
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -97,10 +104,10 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     console.log("Chat Completions API Response:", data)
 
-    // Chat Completions API 응답 처리
-    let aiResponse = "응답을 생성할 수 없습니다."
-    let hasImageGeneration = false
-    let imageUrl = null
+    // Chat Completions API 응답 처리 (변수 재할당)
+    aiResponse = "응답을 생성할 수 없습니다."
+    hasImageGeneration = false
+    imageUrl = ""
 
     const choice = data.choices?.[0]
     if (!choice) {
@@ -121,21 +128,47 @@ export async function POST(request: NextRequest) {
           const searchQuery = functionArgs.query
           console.log("웹 검색 요청:", searchQuery)
 
-          // SerpAPI 호출
-          const searchResponse = await fetch(
-            `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/api/search`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ query: searchQuery, apiKey })
-            }
-          )
+          try {
+            // SerpAPI 직접 호출
+            const serpApiKey = process.env.SERPAPI_KEY
+            if (!serpApiKey) {
+              aiResponse =
+                "검색 기능을 사용하려면 SERPAPI_KEY 환경 변수가 필요합니다."
+            } else {
+              const searchResponse = await fetch(
+                `https://serpapi.com/search.json?engine=google&q=${encodeURIComponent(searchQuery)}&api_key=${serpApiKey}&num=5`
+              )
 
-          if (searchResponse.ok) {
-            const searchData = await searchResponse.json()
-            aiResponse =
-              searchData.response || "검색 결과를 가져올 수 없습니다."
-          } else {
+              if (searchResponse.ok) {
+                const searchData = await searchResponse.json()
+
+                if (
+                  searchData.organic_results &&
+                  searchData.organic_results.length > 0
+                ) {
+                  hasWebSearch = true
+                  const results = searchData.organic_results
+                    .slice(0, 3)
+                    .map(
+                      (result: any, index: number) =>
+                        `${index + 1}. **${result.title}**\n   ${result.snippet}\n   🔗 출처: ${result.link}\n`
+                    )
+                    .join("\n")
+
+                  searchResults = results
+                  aiResponse = `"${searchQuery}"에 대한 최신 검색 결과입니다:\n\n${results}\n🔍 검색 시간: ${new Date().toLocaleString("ko-KR")}`
+                } else {
+                  aiResponse = `"${searchQuery}"에 대한 검색 결과를 찾을 수 없습니다.`
+                }
+              } else {
+                const errorData = await searchResponse.json()
+                console.log("SerpAPI Error:", errorData)
+                aiResponse =
+                  "검색 중 오류가 발생했습니다. API 키를 확인해주세요."
+              }
+            }
+          } catch (error) {
+            console.error("Search error:", error)
             aiResponse = "검색 중 오류가 발생했습니다."
           }
         }
