@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       .single()
 
     if (!customModel) {
-      throw new Error(error.message)
+      throw new Error(error?.message || "Custom model not found")
     }
 
     const custom = new OpenAI({
