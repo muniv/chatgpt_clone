@@ -2,17 +2,21 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, apiKey } = await request.json()
+    console.log("=== Chat API 호출 시작 ===")
 
-    if (!messages || !apiKey) {
+    const { messages, apiKey } = await request.json()
+    console.log("받은 메시지 수:", messages?.length)
+
+    if (!apiKey) {
+      console.error("API 키 누락")
       return NextResponse.json(
-        { error: "Messages and API key are required" },
+        { error: "API key is required" },
         { status: 400 }
       )
     }
 
-    // 메시지 배열 검증
     if (!Array.isArray(messages) || messages.length === 0) {
+      console.error("잘못된 메시지 형식:", messages)
       return NextResponse.json(
         { error: "Messages must be a non-empty array" },
         { status: 400 }
@@ -391,9 +395,22 @@ export async function POST(request: NextRequest) {
       imageUrl
     })
   } catch (error) {
-    console.error("Chat API error:", error)
+    console.error("=== Chat API 전체 에러 ===", error)
+
+    // 에러 상세 정보 로깅
+    if (error instanceof Error) {
+      console.error("에러 메시지:", error.message)
+      console.error("에러 스택:", error.stack)
+    }
+
     return NextResponse.json(
-      { error: "서버 오류가 발생했습니다." },
+      {
+        error: "Internal server error",
+        details:
+          process.env.NODE_ENV === "development"
+            ? (error as Error).message
+            : undefined
+      },
       { status: 500 }
     )
   }
