@@ -2,13 +2,25 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt, apiKey } = await request.json()
+    const { prompt, apiKey, conversationHistory } = await request.json()
 
     if (!prompt || !apiKey) {
       return NextResponse.json(
         { error: "Prompt and API key are required" },
         { status: 400 }
       )
+    }
+
+    // 대화 히스토리를 바탕으로 맥락 정보 추출
+    let contextInfo = ""
+    if (conversationHistory && conversationHistory.length > 0) {
+      // 최근 5개 메시지에서 맥락 추출
+      const recentMessages = conversationHistory.slice(-5)
+      contextInfo = recentMessages
+        .map((msg: any) => `${msg.role}: ${msg.content}`)
+        .join("\n")
+
+      console.log("대화 히스토리 맥락:", contextInfo)
     }
 
     // 한국어 프롬프트를 영어로 번역 및 최적화
@@ -31,11 +43,11 @@ export async function POST(request: NextRequest) {
               {
                 role: "system",
                 content:
-                  "You are a professional translator and DALL-E prompt optimizer. Translate Korean text to English and optimize it for DALL-E image generation. Make the prompt detailed, vivid, and artistic. Include style, mood, lighting, and composition details."
+                  "You are a professional translator and DALL-E prompt optimizer. Translate Korean text to English and optimize it for DALL-E image generation. Make the prompt detailed, vivid, and artistic. Include style, mood, lighting, and composition details. Use the conversation context to enhance the prompt with relevant details."
               },
               {
                 role: "user",
-                content: `Translate and optimize this Korean prompt for DALL-E: "${prompt}"`
+                content: `Translate and optimize this Korean prompt for DALL-E: "${prompt}"${contextInfo ? `\n\nConversation context for reference:\n${contextInfo}` : ""}`
               }
             ],
             max_tokens: 200,
