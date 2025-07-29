@@ -56,11 +56,7 @@ export default function ChatPage() {
   const handleSearchMessage = async () => {
     if (!inputValue.trim()) return
 
-    // "그려줘" 키워드 감지 후 이미지 생성 기능 호출
-    if (/그려줘|그려|그림|이미지/i.test(inputValue)) {
-      await handleImageGeneration()
-      return
-    }
+    // 모든 요청을 통합된 Responses API로 처리 (이미지 생성, 웹 검색 포함)
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -127,114 +123,10 @@ export default function ChatPage() {
     setIsLoading(false)
   }
 
-  const handleImageGeneration = async () => {
-    if (!inputValue.trim()) return
-
-    // "그려줘" 키워드 제거하고 실제 프롬프트 추출
-    let prompt = inputValue.replace(/그려줘|그려|그림|이미지/gi, "").trim()
-
-    // 대화 맥락을 분석해서 프롬프트 보강
-    if (messages.length > 0) {
-      // 최근 3개 메시지에서 맥락 추출
-      const recentMessages = messages.slice(-3)
-      const contextInfo = recentMessages
-        .filter(msg => msg.role === "user" || msg.role === "assistant")
-        .map(msg => msg.content)
-        .join(" ")
-
-      // 맥락에서 관련 키워드 추출 (색상, 스타일, 객체 등)
-      const contextKeywords = contextInfo.match(
-        /\b(빨간|파란|노란|초록|검은|흰|큰|작은|귀여운|아름다운|현대적인|클래식한|미래적인|자연|도시|바다|산|하늘|동물|사람|건물|꽃|나무)\b/g
-      )
-
-      if (contextKeywords && contextKeywords.length > 0) {
-        // 중복 제거 후 맥락 정보 추가
-        const uniqueKeywords = [...new Set(contextKeywords)]
-        prompt = `${prompt}, ${uniqueKeywords.join(", ")} 스타일로`
-      }
-
-      // 이전 대화에서 구체적인 설명이 있었다면 포함
-      const detailedContext = recentMessages
-        .filter(msg => msg.content.length > 20 && !msg.content.includes("그려"))
-        .slice(-1)[0]?.content
-
-      if (detailedContext && detailedContext.length < 100) {
-        prompt = `${prompt}, ${detailedContext}의 분위기로`
-      }
-    }
-
-    if (
-      !prompt ||
-      prompt.replace(/,\s*(스타일로|의\s*분위기로)/g, "").trim() === ""
-    ) {
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: "무엇을 그려드릴까요? 예: '고양이 그려줘', '바다 풍경 그려줘'",
-        role: "assistant",
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, errorMessage])
-      return
-    }
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: inputValue,
-      role: "user",
-      timestamp: new Date()
-    }
-
-    setMessages(prev => [...prev, userMessage])
-    setInputValue("")
-    setIsLoading(true)
-
-    try {
-      // 이미지 생성 API 호출
-      const response = await fetch("/api/image", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          prompt: prompt,
-          apiKey: apiKey
-        })
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        const botMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          content: `"${prompt}"에 대한 이미지를 생성했습니다:\n\n![생성된 이미지](${data.imageUrl})\n\n🎨 생성 시간: ${new Date().toLocaleString("ko-KR")}`,
-          role: "assistant",
-          timestamp: new Date()
-        }
-        setMessages(prev => [...prev, botMessage])
-      } else {
-        throw new Error("이미지 생성 API 호출 실패")
-      }
-    } catch (error) {
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content:
-          "죄송합니다. 이미지 생성 중 오류가 발생했습니다. API 키를 확인해주세요.",
-        role: "assistant",
-        timestamp: new Date()
-      }
-      setMessages(prev => [...prev, errorMessage])
-    }
-
-    setIsLoading(false)
-  }
-
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return
 
-    // "그려줘" 키워드 감지 후 이미지 생성 기능 호출
-    if (/그려줘|그려|그림|이미지/i.test(inputValue)) {
-      await handleImageGeneration()
-      return
-    }
+    // 모든 요청을 통합된 Responses API로 처리 (이미지 생성, 웹 검색, 일반 대화 포함)
 
     const userMessage: Message = {
       id: Date.now().toString(),
